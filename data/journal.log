@@ -1,0 +1,18 @@
+CREATE anmol
+WRITE hello this is my first file
+DELETE anmol
+WRITE anmol rewriting
+WRITE hello reqriting into hello
+CREATE anmol.txt
+WRITE anmol.txt hello  this is my first file
+DELETE anmol.txt
+CREATE anmol.txt
+WRITE anmol.txt hello  this is my first file
+WRITE anmol.txt changing the contents
+CREATE anmol.txt
+WRITE anmol.txt hello  this is my forst file
+CREATE new.txt
+WRITE new.txt thisis new file
+DELETE new.txt
+CREATE hello.txt
+WRITE hello.txt writing
