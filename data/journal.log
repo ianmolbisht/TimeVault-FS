@@ -16,3 +16,22 @@ WRITE new.txt thisis new file
 DELETE new.txt
 CREATE hello.txt
 WRITE hello.txt writing
+CREATE test.txt
+CREATE file1.txt
+WRITE file1.txt hello world
+WRITE file1.txt good morning
+CREATE file2.txt
+WRITE file2.txt what's up
+WRITE file2.txt hii 
+DELETE file1.txt
+CREATE file3.txt
+WRITE file3.txt first file
+WRITE file3.txt whats up
+WRITE file3.txt hello
+WRITE file3.txt hii
+DELETE file3.txt
+DELETE file3.txt
+DELETE file3.txt
+DELETE file3.txt
+DELETE file3.txt
+DELETE file3.txt
