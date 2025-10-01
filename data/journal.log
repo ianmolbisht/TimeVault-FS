@@ -35,3 +35,5 @@ DELETE file3.txt
 DELETE file3.txt
 DELETE file3.txt
 DELETE file3.txt
+WRITE file3.txt file3 
+WRITE file3.txt file done
