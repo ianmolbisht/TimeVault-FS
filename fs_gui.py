@@ -68,6 +68,16 @@ def save_snapshot_for_selected_file():
         messagebox.showerror("Error", f"{filename} not found in data/.")
         return
     snapshot_folder = ensure_snapshot_dir_for_file(filename)
+
+    # --- Limit snapshots to max 5 ---
+    existing_snaps = sorted(os.listdir(snapshot_folder))
+    if len(existing_snaps) >= 5:
+        messagebox.showwarning(
+            "Limit Reached",
+            "MAXIMUM LIMIT CROSSED : CAN SAVE ONLY 5 SNAPSHOTS"
+        )
+        return
+
     snap_name = next_snapshot_name(filename)
     snap_path = os.path.join(snapshot_folder, snap_name)
     shutil.copy2(data_path, snap_path)
