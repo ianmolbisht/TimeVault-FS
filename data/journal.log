@@ -37,3 +37,5 @@ DELETE file3.txt
 DELETE file3.txt
 WRITE file3.txt file3 
 WRITE file3.txt file done
+CREATE h2.txt
+WRITE h2.txt hello aksh
