@@ -37,3 +37,20 @@ DELETE file3.txt
 DELETE file3.txt
 WRITE file3.txt file3 
 WRITE file3.txt file done
+CREATE file3.txt
+WRITE file3.txt hello world
+CREATE file4.txt
+WRITE file4.txt hiiiii
+WRITE file4.txt wavyy
+DELETE file4.txt
+DELETE file4.txt
+DELETE file4.txt
+CREATE file5.txt
+WRITE file5.txt hello
+WRITE file5.txt morning
+WRITE file5.txt good
+WRITE file3.txt good
+WRITE file3.txt good
+WRITE file5.txt good
+WRITE file5.txt good
+WRITE file3.txt zig zag

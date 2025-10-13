@@ -92,6 +92,7 @@ def restore_snapshot_for_selected():
     output_text.delete(1.0, tk.END)
     output_text.insert(tk.END, f"Restored {filename} from {snap_name}")
 
+
 # refresh_file_list()
 
 
