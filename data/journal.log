@@ -37,6 +37,7 @@ DELETE file3.txt
 DELETE file3.txt
 WRITE file3.txt file3 
 WRITE file3.txt file done
+<<<<<<< HEAD
 CREATE file3.txt
 WRITE file3.txt hello world
 CREATE file4.txt
@@ -54,3 +55,21 @@ WRITE file3.txt good
 WRITE file5.txt good
 WRITE file5.txt good
 WRITE file3.txt zig zag
+=======
+CREATE h2.txt
+WRITE h2.txt hello aksh
+CREATE anmol.txt
+CREATE aks.txt
+WRITE aks.txt "hello i am aks"
+WRITE aks.txt "hllo"
+CREATE anm.txt
+WRITE anm.txt "hello"
+CREATE anml.txt
+WRITE anml.txt "hello anmol"
+WRITE anm.txt "this is 2nd one"
+CREATE w.txt
+WRITE w.txt hellllllo
+WRITE w.txt wassup
+WRITE w.txt heh
+CREATE n.txt
+>>>>>>> 14d6bb235644eb1219cf896a48aafd462b96a057
