@@ -53,3 +53,45 @@ WRITE w.txt hellllllo
 WRITE w.txt wassup
 WRITE w.txt heh
 CREATE n.txt
+CREATE akshat.txt
+WRITE akshat.txt "hello bhai kaisa hai"
+WRITE akshat.txt theek hai akhsat
+WRITE akshat.txt "ooooooooo"
+DELETE akshat.txt
+CREATE 1.txt
+WRITE 1.txt "heii"
+WRITE 1.txt bi
+WRITE 1.txt bsjdb
+CREATE 2.txt
+CREATE test.txt
+WRITE test.txt helloworld
+WRITE test.txt modify
+CREATE tst.txt
+CREATE 3.txt
+WRITE 3.txt 1111
+WRITE 3.txt 2222
+CREATE tst.txt
+WRITE tst.txt hello
+WRITE tst.txt changed
+CREATE 1.txt
+WRITE 1.txt hi
+WRITE bye 
+WRITE 1.txt bye
+WRITE 1.txt n
+WRITE 1.txt mji
+CREATE h
+WRITE h hello
+WRITE h by
+WRITE h byebye
+DELETE 1.txt
+DELETE h
+DELETE bye
+CREATE h
+WRITE h hii
+WRITE h byebye
+CREATE a
+WRITE a hi
+WRITE a by
+WRITE a how
+DELETE a
+DELETE h
