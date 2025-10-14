@@ -37,6 +37,25 @@ DELETE file3.txt
 DELETE file3.txt
 WRITE file3.txt file3 
 WRITE file3.txt file done
+<<<<<<< HEAD
+CREATE file3.txt
+WRITE file3.txt hello world
+CREATE file4.txt
+WRITE file4.txt hiiiii
+WRITE file4.txt wavyy
+DELETE file4.txt
+DELETE file4.txt
+DELETE file4.txt
+CREATE file5.txt
+WRITE file5.txt hello
+WRITE file5.txt morning
+WRITE file5.txt good
+WRITE file3.txt good
+WRITE file3.txt good
+WRITE file5.txt good
+WRITE file5.txt good
+WRITE file3.txt zig zag
+=======
 CREATE h2.txt
 WRITE h2.txt hello aksh
 CREATE anmol.txt
@@ -53,6 +72,7 @@ WRITE w.txt hellllllo
 WRITE w.txt wassup
 WRITE w.txt heh
 CREATE n.txt
+<<<<<<< HEAD
 CREATE akshat.txt
 WRITE akshat.txt "hello bhai kaisa hai"
 WRITE akshat.txt theek hai akhsat
@@ -95,3 +115,5 @@ WRITE a by
 WRITE a how
 DELETE a
 DELETE h
+14d6bb235644eb1219cf896a48aafd462b96a057
+b1dc53897404532e4402b7a06310fc237fbc4e0e
