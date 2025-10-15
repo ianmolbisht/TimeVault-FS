@@ -120,3 +120,6 @@ b1dc53897404532e4402b7a06310fc237fbc4e0e
 CREATE n
 WRITE n hi
 WRITE n hihihii
+CREATE a
+WRITE a heloo
+WRITE a byee

@@ -6,11 +6,13 @@
 
 #define DATA_FOLDER "data/"
 
-void create_file(char *filename) {
+void create_file(char *filename)
+{
     char path[100];
     sprintf(path, "%s%s", DATA_FOLDER, filename);
     FILE *fp = fopen(path, "w");
-    if (fp == NULL) {
+    if (fp == NULL)
+    {
         printf("Error creating file.\n");
         return;
     }
@@ -19,11 +21,13 @@ void create_file(char *filename) {
     printf("File %s created.\n", filename);
 }
 
-void write_file(char *filename, char *data) {
+void write_file(char *filename, char *data)
+{
     char path[100];
     sprintf(path, "%s%s", DATA_FOLDER, filename);
     FILE *fp = fopen(path, "a");
-    if (fp == NULL) {
+    if (fp == NULL)
+    {
         printf("Error opening file.\n");
         return;
     }
@@ -33,29 +37,36 @@ void write_file(char *filename, char *data) {
     printf("Data written to %s.\n", filename);
 }
 
-void read_file(char *filename) {
+void read_file(char *filename)
+{
     char path[100];
     sprintf(path, "%s%s", DATA_FOLDER, filename);
     FILE *fp = fopen(path, "r");
-    if (fp == NULL) {
+    if (fp == NULL)
+    {
         printf("File does not exist.\n");
         return;
     }
     char line[256];
     printf("Contents of %s:\n", filename);
-    while (fgets(line, sizeof(line), fp)) {
+    while (fgets(line, sizeof(line), fp))
+    {
         printf("%s", line);
     }
     fclose(fp);
 }
 
-void delete_file(char *filename) {
+void delete_file(char *filename)
+{
     char path[100];
     sprintf(path, "%s%s", DATA_FOLDER, filename);
-    if (remove(path) == 0) {
+    if (remove(path) == 0)
+    {
         log_operation("DELETE", filename, NULL);
         printf("File %s deleted.\n", filename);
-    } else {
+    }
+    else
+    {
         printf("Failed to delete %s.\n", filename);
     }
 }
