@@ -1,5 +1,3 @@
-
-
 import subprocess
 import tkinter as tk
 from tkinter import ttk, messagebox
@@ -56,17 +54,8 @@ def save_snapshot_for_selected_file():
     if not filename:
         messagebox.showerror("Error", "Enter a file name first.")
         return
-    data_path = os.path.join(DATA_FOLDER, filename)
-    if not os.path.isfile(data_path):
-        messagebox.showerror("Error", f"{filename} not found in data/.")
-        return
-    snapshot_folder = ensure_snapshot_dir_for_file(filename)
-    snap_name = next_snapshot_name(filename)
-    snap_path = os.path.join(snapshot_folder, snap_name)
-    shutil.copy2(data_path, snap_path)
+    run_command(f"snapshot {filename}")
     populate_snapshot_list_for_file(filename)
-    output_text.delete(1.0, tk.END)
-    output_text.insert(tk.END, f"Snapshot saved: {snap_name}")
 
 def restore_snapshot_for_selected():
     filename = entry_snap_file.get().strip()
@@ -75,31 +64,14 @@ def restore_snapshot_for_selected():
         messagebox.showerror("Error", "Enter file name and select a snapshot.")
         return
     snap_name = snapshot_list.get(snap_sel[0])
-    snap_path = os.path.join(SNAPSHOT_ROOT, filename, snap_name)
-    data_path = os.path.join(DATA_FOLDER, filename)
-    shutil.copy2(snap_path, data_path)
-    output_text.delete(1.0, tk.END)
-    output_text.insert(tk.END, f"Restored {filename} from {snap_name}")
+    run_command(f"restore {snap_name}")
 
 def rollback_latest_snapshot():
     filename = entry_file.get().strip()
     if not filename:
         messagebox.showerror("Error", "Enter a file name first.")
         return
-    folder = os.path.join(SNAPSHOT_ROOT, filename)
-    if not os.path.isdir(folder):
-        messagebox.showinfo("Info", f"No snapshots available for {filename}.")
-        return
-    snaps = sorted(os.listdir(folder))
-    if not snaps:
-        messagebox.showinfo("Info", f"No snapshots found for {filename}.")
-        return
-    latest_snap = snaps[-1]
-    snap_path = os.path.join(folder, latest_snap)
-    data_path = os.path.join(DATA_FOLDER, filename)
-    shutil.copy2(snap_path, data_path)
-    output_text.delete(1.0, tk.END)
-    output_text.insert(tk.END, f"Rollback done: Restored {filename} from {latest_snap}")
+    run_command(f"restore {filename}")
 
 root = tk.Tk()
 root.title("TimeVaultFS Manager")
