@@ -104,11 +104,15 @@ tk.Button(tab_file, text="Create File", command=lambda: run_command(f"create {en
 tk.Button(tab_file, text="Write File", command=lambda: run_command(f"write {entry_file.get()} {entry_data.get()}"), **button_style).grid(row=2, column=1, padx=5, pady=5)
 tk.Button(tab_file, text="Read File", command=lambda: run_command(f"read {entry_file.get()}"), **button_style).grid(row=2, column=2, padx=5, pady=5)
 tk.Button(tab_file, text="Delete File", command=lambda: run_command(f"delete {entry_file.get()}"), **button_style).grid(row=2, column=3, padx=5, pady=5)
-tk.Button(tab_file, text="Rollback", command=rollback_latest_snapshot, **button_style).grid(row=3, column=0, padx=5, pady=5)
-tk.Button(tab_file, text="Exit", command=root.quit, **button_style).grid(row=3, column=3, padx=5, pady=5)
+tk.Button(tab_file, text="File Info", command=lambda: run_command(f"info {entry_file.get()}"), **button_style).grid(row=3, column=0, padx=5, pady=5)
+tk.Button(tab_file, text="Lock File", command=lambda: run_command(f"lock {entry_file.get()}"), **button_style).grid(row=3, column=1, padx=5, pady=5)
+tk.Button(tab_file, text="Unlock File", command=lambda: run_command(f"unlock {entry_file.get()}"), **button_style).grid(row=3, column=2, padx=5, pady=5)
+tk.Button(tab_file, text="Compress", command=lambda: run_command(f"compress {entry_file.get()}"), **button_style).grid(row=3, column=3, padx=5, pady=5)
+tk.Button(tab_file, text="Rollback", command=rollback_latest_snapshot, **button_style).grid(row=4, column=0, padx=5, pady=5)
+tk.Button(tab_file, text="Exit", command=root.quit, **button_style).grid(row=4, column=3, padx=5, pady=5)
 
 output_text = tk.Text(tab_file, height=10, width=80, bg="#2e2e3e", fg="white")
-output_text.grid(row=4, column=0, columnspan=4, pady=10, padx=5)
+output_text.grid(row=5, column=0, columnspan=4, pady=10, padx=5)
 
 tab_snapshot = ttk.Frame(tab_control)
 tab_control.add(tab_snapshot, text="Snapshots")
@@ -122,8 +126,38 @@ entry_snap_file.grid(row=1, column=1, padx=5, pady=5)
 
 tk.Button(tab_snapshot, text="Show Snapshots", command=lambda: populate_snapshot_list_for_file(entry_snap_file.get()), **button_style).grid(row=1, column=2, padx=5, pady=5)
 
+tk.Label(tab_snapshot, text="Keep N snapshots:", bg="#1e1e2f", fg="white").grid(row=2, column=0, padx=5, pady=5, sticky="w")
+entry_keep_count = tk.Entry(tab_snapshot, width=10)
+entry_keep_count.insert(0, "5")
+entry_keep_count.grid(row=2, column=1, padx=5, pady=5, sticky="w")
+tk.Button(tab_snapshot, text="Cleanup Snapshots", command=lambda: run_command(f"cleanup-snapshots {entry_snap_file.get()} {entry_keep_count.get()}"), **button_style).grid(row=2, column=2, padx=5, pady=5)
+
 tk.Label(tab_snapshot, text="Snapshots for selected file:", bg="#1e1e2f", fg="white").grid(row=3, column=0, padx=5, pady=5, sticky="w")
 snapshot_list = tk.Listbox(tab_snapshot, width=50, height=10, bg="#2e2e3e", fg="white")
 snapshot_list.grid(row=4, column=0, columnspan=4, padx=5, pady=5)
+
+# Search Tab
+tab_search = ttk.Frame(tab_control)
+tab_control.add(tab_search, text="Search & Tools")
+
+tk.Label(tab_search, text="Search Pattern:", bg="#1e1e2f", fg="white").grid(row=0, column=0, padx=5, pady=5, sticky="w")
+entry_search_pattern = tk.Entry(tab_search, width=40)
+entry_search_pattern.grid(row=0, column=1, padx=5, pady=5)
+
+search_output = tk.Text(tab_search, height=15, width=80, bg="#2e2e3e", fg="white")
+search_output.grid(row=2, column=0, columnspan=4, pady=10, padx=5)
+
+def run_search_command(command):
+    try:
+        result = subprocess.run([C_EXE_PATH], input=command + "\nexit\n", text=True, capture_output=True)
+        search_output.delete(1.0, tk.END)
+        search_output.insert(tk.END, result.stdout)
+    except Exception as e:
+        messagebox.showerror("Error", str(e))
+
+tk.Button(tab_search, text="Search by Name", command=lambda: run_search_command(f"search {entry_search_pattern.get()}"), **button_style).grid(row=1, column=0, padx=5, pady=5)
+tk.Button(tab_search, text="Search by Content", command=lambda: run_search_command(f"grep {entry_search_pattern.get()}"), **button_style).grid(row=1, column=1, padx=5, pady=5)
+tk.Button(tab_search, text="List All Files", command=lambda: run_search_command("list-files"), **button_style).grid(row=1, column=2, padx=5, pady=5)
+tk.Button(tab_search, text="List Locked Files", command=lambda: run_search_command("list-locks"), **button_style).grid(row=1, column=3, padx=5, pady=5)
 
 root.mainloop()

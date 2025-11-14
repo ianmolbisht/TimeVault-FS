@@ -3,11 +3,19 @@
 #include <string.h>
 #include "file_manager.h"
 #include "journal_manager.h"
+#include "metadata_manager.h"
+#include "lock_manager.h"
 
 #define DATA_FOLDER "data/"
 
 void create_file(char *filename)
 {
+    if (is_locked(filename))
+    {
+        printf("Error: File %s is locked. Cannot create.\n", filename);
+        return;
+    }
+
     char path[100];
     sprintf(path, "%s%s", DATA_FOLDER, filename);
     FILE *fp = fopen(path, "w");
@@ -17,12 +25,19 @@ void create_file(char *filename)
         return;
     }
     fclose(fp);
+    update_metadata(filename);
     log_operation("CREATE", filename, NULL);
     printf("File %s created.\n", filename);
 }
 
 void write_file(char *filename, char *data)
 {
+    if (is_locked(filename))
+    {
+        printf("Error: File %s is locked. Cannot write.\n", filename);
+        return;
+    }
+
     char path[100];
     sprintf(path, "%s%s", DATA_FOLDER, filename);
     FILE *fp = fopen(path, "a");
@@ -33,6 +48,7 @@ void write_file(char *filename, char *data)
     }
     fprintf(fp, "%s\n", data);
     fclose(fp);
+    update_metadata(filename);
     log_operation("WRITE", filename, data);
     printf("Data written to %s.\n", filename);
 }
@@ -58,10 +74,17 @@ void read_file(char *filename)
 
 void delete_file(char *filename)
 {
+    if (is_locked(filename))
+    {
+        printf("Error: File %s is locked. Cannot delete.\n", filename);
+        return;
+    }
+
     char path[100];
     sprintf(path, "%s%s", DATA_FOLDER, filename);
     if (remove(path) == 0)
     {
+        unlock_file(filename); // Remove lock if exists
         log_operation("DELETE", filename, NULL);
         printf("File %s deleted.\n", filename);
     }

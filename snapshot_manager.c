@@ -5,27 +5,12 @@
 #include <sys/stat.h>
 #include <dirent.h>
 
-#ifdef _WIN32
 #include <direct.h>
 #define mkdir_p(x) _mkdir(x)
 #define PATH_SEP "\\"
-#else
-#include <unistd.h>
-#define mkdir_p(x) mkdir(x, 0755)
-#define PATH_SEP "/"
-#endif
 
 #define DATA_DIR "data"
 #define SNAP_ROOT "snapshots"
-
-/* Delta + Chunked dedup + lightweight compression (append-only optimization):
-   - snap1 stores a manifest of chunks covering the full file
-   - snapN (N>1) stores a manifest of chunks for only the appended bytes
-   - A metadata file 'meta.txt' stores lines: "<index> <cumulative_size>\n"
-   - Chunks are stored once in snapshots/<file>/.chunks/<hash>.chunk
-   - Each chunk may be RLE-compressed if smaller than original
-   - To restore, concatenate chunks from manifests (snap1..K) into destination
-*/
 #define META_FILE "meta.txt"
 #define CHUNK_STORE ".chunks"
 #define CHUNK_EXT ".chunk"
@@ -523,6 +508,106 @@ void delete_snapshots_for_file(const char *f)
     }
     closedir(d);
     rmdir(fp);
+}
+
+void cleanup_snapshots(char *f, int keep_count)
+{
+    if (!f || f[0] == '\0')
+    {
+        printf("need filename\n");
+        return;
+    }
+    if (keep_count < 1)
+    {
+        printf("keep count must be at least 1\n");
+        return;
+    }
+
+    char b[256], e[64];
+    split_name(f, b, e);
+    char fp[512];
+    sprintf(fp, SNAP_ROOT PATH_SEP "%s", f);
+    DIR *d = opendir(fp);
+    if (!d)
+    {
+        printf("no snapshots found for %s\n", f);
+        return;
+    }
+
+    // Collect all snapshot indices
+    int indices[1000];
+    int count = 0;
+    struct dirent *en;
+    while ((en = readdir(d)) != NULL)
+    {
+        if (en->d_name[0] == '.' || strcmp(en->d_name, META_FILE) == 0)
+            continue;
+        if (strstr(en->d_name, "_snap") != NULL)
+        {
+            char *sp = strstr(en->d_name, "_snap");
+            int idx = atoi(sp + 5);
+            if (idx > 0)
+            {
+                indices[count++] = idx;
+            }
+        }
+    }
+    closedir(d);
+
+    if (count <= keep_count)
+    {
+        printf("Only %d snapshot(s) exist, keeping all.\n", count);
+        return;
+    }
+
+    // Sort indices (simple bubble sort)
+    for (int i = 0; i < count - 1; i++)
+    {
+        for (int j = 0; j < count - i - 1; j++)
+        {
+            if (indices[j] > indices[j + 1])
+            {
+                int temp = indices[j];
+                indices[j] = indices[j + 1];
+                indices[j + 1] = temp;
+            }
+        }
+    }
+
+    // Delete oldest snapshots (keep the last keep_count)
+    int deleted = 0;
+    for (int i = 0; i < count - keep_count; i++)
+    {
+        char snap_name[512], snap_path[1024];
+        sprintf(snap_name, "%s_snap%d%s", b, indices[i], e);
+        sprintf(snap_path, "%s" PATH_SEP "%s", fp, snap_name);
+        if (remove(snap_path) == 0)
+        {
+            deleted++;
+        }
+    }
+
+    // Update metadata file
+    char meta_path[1024];
+    sprintf(meta_path, "%s" PATH_SEP META_FILE, fp);
+    FILE *meta_fp = fopen(meta_path, "w");
+    if (meta_fp)
+    {
+        long last_size = 0;
+        for (int i = count - keep_count; i < count; i++)
+        {
+            char snap_name[512], snap_path[1024];
+            sprintf(snap_name, "%s_snap%d%s", b, indices[i], e);
+            sprintf(snap_path, "%s" PATH_SEP "%s", fp, snap_name);
+            long sz = file_size_bytes(snap_path);
+            if (sz > 0)
+                last_size += sz;
+            fprintf(meta_fp, "%d %ld\n", indices[i], last_size);
+        }
+        fclose(meta_fp);
+    }
+
+    printf("Cleaned up %d snapshot(s), kept %d latest.\n", deleted, keep_count);
 }
 
 //old one ise delete mat krna abhi
