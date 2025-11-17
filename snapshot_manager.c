@@ -478,7 +478,6 @@ void restore_snapshot_single_or_latest(char *n)
         return;
     }
 
-    /* Reconstruct latest by concatenating from 1..last_idx */
     char dest[512], part[512];
     sprintf(dest, DATA_DIR PATH_SEP "%s", n);
     FILE *out = fopen(dest, "wb");
@@ -621,7 +620,6 @@ void cleanup_snapshots(char *f, int keep_count)
         return;
     }
 
-    // Sort indices (simple bubble sort)
     for (int i = 0; i < count - 1; i++)
     {
         for (int j = 0; j < count - i - 1; j++)
@@ -635,7 +633,6 @@ void cleanup_snapshots(char *f, int keep_count)
         }
     }
 
-    // Delete oldest snapshots (keep the last keep_count)
     int deleted = 0;
     for (int i = 0; i < count - keep_count; i++)
     {

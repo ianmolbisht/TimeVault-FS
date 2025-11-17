@@ -36,9 +36,24 @@ void update_metadata(char *filename)
     if (meta_fp == NULL)
         return;
 
+    char created_str[64];
+    char modified_str[64];
+
+    struct tm *timeinfo = localtime(&file_stat.st_ctime);
+    if (timeinfo)
+        strftime(created_str, sizeof(created_str), "%Y-%m-%d %H:%M:%S", timeinfo);
+    else
+        strcpy(created_str, "unknown");
+
+    timeinfo = localtime(&file_stat.st_mtime);
+    if (timeinfo)
+        strftime(modified_str, sizeof(modified_str), "%Y-%m-%d %H:%M:%S", timeinfo);
+    else
+        strcpy(modified_str, "unknown");
+
     fprintf(meta_fp, "size:%ld\n", (long)file_stat.st_size);
-    fprintf(meta_fp, "created:%ld\n", (long)file_stat.st_ctime);
-    fprintf(meta_fp, "modified:%ld\n", (long)file_stat.st_mtime);
+    fprintf(meta_fp, "created:%s\n", created_str);
+    fprintf(meta_fp, "modified:%s\n", modified_str);
     fclose(meta_fp);
 }
 
