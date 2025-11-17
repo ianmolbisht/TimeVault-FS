@@ -15,14 +15,14 @@ static void ensure_lock_dir(void)
     _mkdir(LOCK_FOLDER);
 }
 
-static char *get_lock_path(char *filename)
+static char *get_lock_path(const char *filename)
 {
     static char lock_path[256];
     sprintf(lock_path, "%s%s.lock", LOCK_FOLDER, filename);
     return lock_path;
 }
 
-int lock_file(char *filename)
+int lock_file(const char *filename)
 {
     ensure_lock_dir();
     char *lock_path = get_lock_path(filename);
@@ -46,7 +46,7 @@ int lock_file(char *filename)
     return 0;
 }
 
-int unlock_file(char *filename)
+int unlock_file(const char *filename)
 {
     char *lock_path = get_lock_path(filename);
 
@@ -68,7 +68,7 @@ int unlock_file(char *filename)
     }
 }
 
-int is_locked(char *filename)
+int is_locked(const char *filename)
 {
     char *lock_path = get_lock_path(filename);
     FILE *fp = fopen(lock_path, "r");

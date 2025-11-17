@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "compression_manager.h"
+#include "lock_manager.h"
 
 #define DATA_FOLDER "data/"
 #define COMPRESSED_EXT ".compressed"
@@ -43,6 +44,12 @@ static size_t rle_decompress(const unsigned char *in, size_t in_len, unsigned ch
 
 int compress_file(char *filename)
 {
+    if (is_locked(filename))
+    {
+        printf("File %s is locked. Cannot compress until it is unlocked.\n", filename);
+        return -1;
+    }
+
     char filepath[256];
     char compressed_path[256];
     sprintf(filepath, "%s%s", DATA_FOLDER, filename);
@@ -128,6 +135,12 @@ int compress_file(char *filename)
 
 int decompress_file(char *filename)
 {
+    if (is_locked(filename))
+    {
+        printf("File %s is locked. Cannot decompress until it is unlocked.\n", filename);
+        return -1;
+    }
+
     if (!is_compressed(filename))
     {
         printf("Error: File %s is not compressed.\n", filename);

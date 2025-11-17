@@ -55,6 +55,12 @@ void write_file(char *filename, char *data)
 
 void read_file(char *filename)
 {
+    if (is_locked(filename))
+    {
+        printf("Error: File %s is locked. Cannot read.\n", filename);
+        return;
+    }
+
     char path[100];
     sprintf(path, "%s%s", DATA_FOLDER, filename);
     FILE *fp = fopen(path, "r");

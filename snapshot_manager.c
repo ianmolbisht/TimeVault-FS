@@ -6,18 +6,49 @@
 #include <dirent.h>
 
 #include <direct.h>
+#include "lock_manager.h"
 #define mkdir_p(x) _mkdir(x)
 #define PATH_SEP "\\"
 
 #define DATA_DIR "data"
 #define SNAP_ROOT "snapshots"
 #define META_FILE "meta.txt"
+#define MAX_SNAPSHOTS_PER_FILE 5
 #define CHUNK_STORE ".chunks"
 #define CHUNK_EXT ".chunk"
 #define MANIFEST_MAGIC "TVFS1\n"
 #define CHUNK_COMP_RLE "R1"
 #define CHUNK_COMP_NONE "N1"
 #define CHUNK_SIZE 65536
+
+static int snapshot_locked_guard(const char *filename, const char *action)
+{
+    if (!filename || filename[0] == '\0')
+        return 0;
+    if (is_locked(filename))
+    {
+        printf("File %s is locked. Cannot %s until it is unlocked.\n", filename, action);
+        return 1;
+    }
+    return 0;
+}
+
+static int count_snapshot_files(const char *dir_path)
+{
+    DIR *dir = opendir(dir_path);
+    if (!dir)
+        return 0;
+    int count = 0;
+    struct dirent *entry;
+    while ((entry = readdir(dir)) != NULL)
+    {
+        if (entry->d_name[0] == '.' || strcmp(entry->d_name, META_FILE) == 0)
+            continue;
+        count++;
+    }
+    closedir(dir);
+    return count;
+}
 
 int file_exists(char *p)
 {
@@ -127,6 +158,9 @@ void save_snapshot(char *f)
         printf("need name\n");
         return;
     }
+    if (snapshot_locked_guard(f, "create snapshots for"))
+        return;
+
     char s1[512];
     sprintf(s1, DATA_DIR PATH_SEP "%s", f);
     if (!file_exists(s1))
@@ -138,6 +172,13 @@ void save_snapshot(char *f)
     char s2[512];
     sprintf(s2, SNAP_ROOT PATH_SEP "%s", f);
     make_dir(s2);
+
+    int existing_count = count_snapshot_files(s2);
+    if (existing_count >= MAX_SNAPSHOTS_PER_FILE)
+    {
+        printf("Snapshot limit (%d) reached for %s. Delete existing snapshots to continue.\n", MAX_SNAPSHOTS_PER_FILE, f);
+        return;
+    }
 
     /* metadata path */
     char meta_path[1024];
@@ -195,7 +236,10 @@ void save_snapshot(char *f)
         if (copy_file(s1, o) == 0)
         {
             append_meta_line(meta_path, next_idx, cur_size);
-            printf("snapshot %s made (full)\n", c);
+            int slots_left = MAX_SNAPSHOTS_PER_FILE - (existing_count + 1);
+            if (slots_left < 0)
+                slots_left = 0;
+            printf("snapshot %s made (full). %d snapshot slot(s) left.\n", c, slots_left);
         }
         else
             printf("error\n");
@@ -211,7 +255,10 @@ void save_snapshot(char *f)
         if (zf)
             fclose(zf);
         append_meta_line(meta_path, next_idx, cur_size);
-        printf("snapshot %s made (no changes)\n", c);
+        int slots_left = MAX_SNAPSHOTS_PER_FILE - (existing_count + 1);
+        if (slots_left < 0)
+            slots_left = 0;
+        printf("snapshot %s made (no changes). %d snapshot slot(s) left.\n", c, slots_left);
         return;
     }
     FILE *src = fopen(s1, "rb");
@@ -248,7 +295,10 @@ void save_snapshot(char *f)
     fclose(src);
     fclose(dst);
     append_meta_line(meta_path, next_idx, cur_size);
-    printf("snapshot %s made (delta %ld bytes)\n", c, delta_size);
+    int slots_left = MAX_SNAPSHOTS_PER_FILE - (existing_count + 1);
+    if (slots_left < 0)
+        slots_left = 0;
+    printf("snapshot %s made (delta %ld bytes). %d snapshot slot(s) left.\n", c, delta_size, slots_left);
 }
 
 void restore_snapshot_single_or_latest(char *n)
@@ -283,6 +333,8 @@ void restore_snapshot_single_or_latest(char *n)
         *pos = '\0';
         char orig[300];
         sprintf(orig, "%s%s", base, ext);
+        if (snapshot_locked_guard(orig, "restore from snapshots"))
+            return;
         char fp[512], cp[512];
         sprintf(fp, SNAP_ROOT PATH_SEP "%s", orig);
         sprintf(cp, "%s" PATH_SEP "%s", fp, n);
@@ -380,6 +432,9 @@ void restore_snapshot_single_or_latest(char *n)
         printf("restored %s from %s\n", orig, n);
         return;
     }
+    if (snapshot_locked_guard(n, "restore from snapshots"))
+        return;
+
     char b[256], e[64];
     split_name(n, b, e);
     char fp[512];
@@ -492,6 +547,9 @@ void delete_snapshots_for_file(const char *f)
 {
     if (!f || f[0] == '\0')
         return;
+
+    if (snapshot_locked_guard(f, "delete snapshots for"))
+        return;
     char fp[512];
     sprintf(fp, SNAP_ROOT PATH_SEP "%s", f);
     DIR *d = opendir(fp);
@@ -522,6 +580,9 @@ void cleanup_snapshots(char *f, int keep_count)
         printf("keep count must be at least 1\n");
         return;
     }
+
+    if (snapshot_locked_guard(f, "cleanup snapshots for"))
+        return;
 
     char b[256], e[64];
     split_name(f, b, e);

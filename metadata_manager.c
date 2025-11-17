@@ -5,6 +5,7 @@
 #include <time.h>
 #include <sys/stat.h>
 #include "metadata_manager.h"
+#include "lock_manager.h"
 
 #define DATA_FOLDER "data/"
 #define METADATA_FOLDER "data/.metadata/"
@@ -43,6 +44,12 @@ void update_metadata(char *filename)
 
 void display_metadata(char *filename)
 {
+    if (is_locked(filename))
+    {
+        printf("File %s is locked. Cannot display metadata until it is unlocked.\n", filename);
+        return;
+    }
+
     char filepath[256];
     char metapath[256];
     sprintf(filepath, "%s%s", DATA_FOLDER, filename);

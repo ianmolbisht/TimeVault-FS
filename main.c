@@ -9,6 +9,16 @@
 #include "compression_manager.h"
 #include "lock_manager.h"
 
+static int disallow_locked_operation(const char *filename, const char *action)
+{
+    if (filename && is_locked(filename))
+    {
+        printf("File %s is locked. Cannot %s until it is unlocked.\n", filename, action);
+        return 1;
+    }
+    return 0;
+}
+
 int main()
 {
     char command[50], filename[50], data[200];
@@ -27,6 +37,8 @@ int main()
                 printf("Filename required.\n");
                 continue;
             }
+            if (disallow_locked_operation(filename, "create"))
+                continue;
             create_file(filename);
             strcpy(current_file, filename);
         }
@@ -45,6 +57,9 @@ int main()
             {
                 strcpy(current_file, filename);
             }
+
+            if (disallow_locked_operation(filename, "write to"))
+                continue;
 
             getchar(); // consume leftover newline
             if (fgets(data, sizeof(data), stdin) == NULL)
@@ -70,6 +85,8 @@ int main()
             {
                 strcpy(current_file, filename);
             }
+            if (disallow_locked_operation(filename, "read from"))
+                continue;
             read_file(filename);
         }
         else if (strcmp(command, "delete") == 0)
@@ -87,6 +104,8 @@ int main()
             {
                 strcpy(current_file, filename);
             }
+            if (disallow_locked_operation(filename, "delete"))
+                continue;
             delete_file(filename);
             delete_snapshots_for_file(filename);
             current_file[0] = '\0';
@@ -107,6 +126,8 @@ int main()
                 }
                 strcpy(filename, current_file);
             }
+            if (disallow_locked_operation(filename, "create snapshots for"))
+                continue;
             save_snapshot(filename);
         }
         else if (strcmp(command, "restore") == 0)
@@ -137,6 +158,8 @@ int main()
             {
                 strcpy(current_file, filename);
             }
+            if (disallow_locked_operation(filename, "list snapshots of"))
+                continue;
             list_snapshots(filename);
         }
         else if (strcmp(command, "cleanup-snapshots") == 0)
@@ -159,6 +182,8 @@ int main()
             {
                 // keep_count already set
             }
+            if (disallow_locked_operation(filename, "cleanup snapshots for"))
+                continue;
             cleanup_snapshots(filename, keep_count);
         }
         else if (strcmp(command, "info") == 0)
@@ -176,6 +201,8 @@ int main()
             {
                 strcpy(current_file, filename);
             }
+            if (disallow_locked_operation(filename, "display metadata for"))
+                continue;
             display_metadata(filename);
         }
         else if (strcmp(command, "search") == 0)
@@ -217,6 +244,8 @@ int main()
             {
                 strcpy(current_file, filename);
             }
+            if (disallow_locked_operation(filename, "compress"))
+                continue;
             compress_file(filename);
         }
         else if (strcmp(command, "decompress") == 0)
@@ -234,6 +263,8 @@ int main()
             {
                 strcpy(current_file, filename);
             }
+            if (disallow_locked_operation(filename, "decompress"))
+                continue;
             decompress_file(filename);
         }
         else if (strcmp(command, "lock") == 0)
@@ -251,8 +282,21 @@ int main()
             {
                 strcpy(current_file, filename);
             }
+
+            char path[256];
+            sprintf(path, "data/%s", filename);
+
+            FILE *fp = fopen(path, "rb");
+            if (!fp)
+            {
+                printf("File %s does not exist. Cannot lock.\n", filename);
+                continue;
+            }
+            fclose(fp);
+
             lock_file(filename);
         }
+
         else if (strcmp(command, "unlock") == 0)
         {
             if (scanf("%49s", filename) != 1)
